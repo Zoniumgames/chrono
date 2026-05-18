@@ -1,487 +1,815 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cronómetro Glassmorphism</title>
-
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Inter,system-ui,sans-serif;
-    }
-
-    :root{
-      --bg1:#0f172a;
-      --bg2:#1e293b;
-
-      --glass:rgba(255,255,255,.08);
-      --border:rgba(255,255,255,.15);
-
-      --primary:#00d4ff;
-      --warning:#ffd000;
-      --danger:#ff3b5f;
-
-      --text:#fff;
-      --text2:rgba(255,255,255,.7);
-    }
-
-    body{
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      overflow:hidden;
-      background:
-        radial-gradient(circle at top left,#1e40af 0%,transparent 30%),
-        radial-gradient(circle at bottom right,#7c3aed 0%,transparent 30%),
-        linear-gradient(135deg,var(--bg1),var(--bg2));
-      color:var(--text);
-      padding:20px;
-    }
-
-    .blur{
-      position:absolute;
-      width:300px;
-      height:300px;
-      border-radius:50%;
-      filter:blur(100px);
-      opacity:.3;
-      animation:float 7s ease-in-out infinite alternate;
-    }
-
-    .blur.one{
-      background:#00d4ff;
-      top:-80px;
-      left:-80px;
-    }
-
-    .blur.two{
-      background:#ff00d4;
-      bottom:-100px;
-      right:-80px;
-      animation-delay:2s;
-    }
-
-    @keyframes float{
-      from{ transform:translateY(0px) translateX(0px);}
-      to{ transform:translateY(20px) translateX(20px);}
-    }
-
-    .app{
-      width:100%;
-      max-width:480px;
-      position:relative;
-      z-index:2;
-    }
-
-    .card{
-      backdrop-filter:blur(22px);
-      -webkit-backdrop-filter:blur(22px);
-      background:var(--glass);
-      border:1px solid var(--border);
-      border-radius:30px;
-      padding:30px;
-      box-shadow:
-        0 10px 40px rgba(0,0,0,.35),
-        inset 0 1px 0 rgba(255,255,255,.06);
-      transition:.25s ease;
-    }
-
-    .title{
-      text-align:center;
-      font-size:1.1rem;
-      color:var(--text2);
-      margin-bottom:25px;
-      letter-spacing:.5px;
-    }
-
-    .timer-wrapper{
-      position:relative;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      margin-bottom:30px;
-    }
-
-    .ring{
-      width:260px;
-      height:260px;
-      border-radius:50%;
-      position:absolute;
-      background:
-        conic-gradient(
-          var(--primary) 0deg,
-          rgba(255,255,255,.08) 0deg
-        );
-      transition:background .2s linear, box-shadow .25s ease;
-      box-shadow:0 0 40px rgba(0,212,255,.25);
-    }
-
-    .ring.warning{
-      box-shadow:0 0 40px rgba(255,208,0,.35);
-    }
-
-    .ring.danger{
-      box-shadow:0 0 50px rgba(255,59,95,.45);
-    }
-
-    .inner{
-      width:225px;
-      height:225px;
-      border-radius:50%;
-      background:rgba(10,15,30,.7);
-      backdrop-filter:blur(15px);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      border:1px solid rgba(255,255,255,.08);
-      z-index:2;
-    }
-
-    .time{
-      font-size:3.2rem;
-      font-weight:700;
-      letter-spacing:2px;
-      transition:.2s ease;
-      font-variant-numeric:tabular-nums;
-    }
-
-    .milliseconds{
-      font-size:1.2rem;
-      color:var(--text2);
-      margin-top:4px;
-      letter-spacing:1px;
-      font-variant-numeric:tabular-nums;
-    }
-
-    .controls{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      margin-bottom:25px;
-    }
-
-    button{
-      border:none;
-      outline:none;
-      padding:14px;
-      border-radius:18px;
-      cursor:pointer;
-      font-size:.95rem;
-      font-weight:600;
-      color:white;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.08);
-      transition:.18s ease;
-      backdrop-filter:blur(10px);
-    }
-
-    button:hover{
-      transform:translateY(-2px) scale(1.02);
-      background:rgba(255,255,255,.13);
-    }
-
-    button:active{
-      transform:scale(.96);
-    }
-
-    .start{
-      background:linear-gradient(135deg,#00d4ff,#006eff);
-    }
-
-    .pause{
-      background:linear-gradient(135deg,#ffb300,#ff7a00);
-    }
-
-    .reset{
-      background:linear-gradient(135deg,#ff4d6d,#c9184a);
-    }
-
-    .settings{
-      margin-top:5px;
-      display:grid;
-      gap:14px;
-    }
-
-    .setting-box{
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.07);
-      border-radius:18px;
-      padding:14px;
-    }
-
-    .setting-box label{
-      display:block;
-      font-size:.9rem;
-      margin-bottom:8px;
-      color:var(--text2);
-    }
-
-    .setting-box input{
-      width:100%;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      color:white;
-      border-radius:12px;
-      padding:12px;
-      outline:none;
-      font-size:1rem;
-    }
-
-    .status{
-      margin-top:18px;
-      text-align:center;
-      font-size:.95rem;
-      font-weight:600;
-      transition:.25s ease;
-      min-height:20px;
-    }
-
-    .warning-text{
-      color:var(--warning);
-    }
-
-    .danger-text{
-      color:var(--danger);
-    }
-
-    @media(max-width:500px){
-      .time{
-        font-size:2.6rem;
-      }
-
-      .ring{
-        width:230px;
-        height:230px;
-      }
-
-      .inner{
-        width:195px;
-        height:195px;
-      }
-
-      .controls{
-        grid-template-columns:1fr;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="blur one"></div>
-  <div class="blur two"></div>
-
-  <div class="app">
-    <div class="card">
-
-      <div class="title">
-        Cronómetro Precision Glass
-      </div>
-
-      <div class="timer-wrapper">
-
-        <div class="ring" id="ring"></div>
-
-        <div class="inner">
-          <div class="time" id="time">
-            00:00
-          </div>
-
-          <div class="milliseconds" id="milliseconds">
-            .000
-          </div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button class="start" id="startBtn">
-          Iniciar
-        </button>
-
-        <button class="pause" id="pauseBtn">
-          Pausar
-        </button>
-
-        <button class="reset" id="resetBtn">
-          Reiniciar
-        </button>
-      </div>
-
-      <div class="settings">
-
-        <div class="setting-box">
-          <label>
-            Tiempo de advertencia (amarillo) en segundos
-          </label>
-
-          <input
-            type="number"
-            id="warningInput"
-            min="1"
-            value="35"
-          />
-        </div>
-
-        <div class="setting-box">
-          <label>
-            Tiempo crítico (rojo) en segundos
-          </label>
-
-          <input
-            type="number"
-            id="dangerInput"
-            min="1"
-            value="60"
-          />
-        </div>
-
-      </div>
-
-      <div class="status" id="status"></div>
-
-    </div>
-  </div>
-
-  <script>
-    const timeEl = document.getElementById('time');
-    const msEl = document.getElementById('milliseconds');
-
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const resetBtn = document.getElementById('resetBtn');
-
-    const warningInput = document.getElementById('warningInput');
-    const dangerInput = document.getElementById('dangerInput');
-
-    const ring = document.getElementById('ring');
-    const statusEl = document.getElementById('status');
-
-    let startTime = 0;
-    let elapsed = 0;
-    let interval = null;
-    let running = false;
-
-    function formatTime(ms){
-
-      const minutes = Math.floor(ms / 60000);
-      const seconds = Math.floor((ms % 60000) / 1000);
-      const milliseconds = ms % 1000;
-
-      timeEl.textContent =
-        `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-
-      msEl.textContent =
-        `.${String(milliseconds).padStart(3,'0')}`;
-    }
-
-    function updateRing(seconds){
-
-      const progress = (seconds % 60) * 6;
-
-      let color = 'var(--primary)';
-
-      const warning = Number(warningInput.value);
-      const danger = Number(dangerInput.value);
-
-      ring.classList.remove('warning','danger');
-      statusEl.className = 'status';
-
-      timeEl.style.color = 'white';
-
-      if(seconds >= danger){
-
-        color = 'var(--danger)';
-
-        ring.classList.add('danger');
-
-        statusEl.textContent = 'Tiempo crítico';
-        statusEl.classList.add('danger-text');
-
-        timeEl.style.color = 'var(--danger)';
-
-      } else if(seconds >= warning){
-
-        color = 'var(--warning)';
-
-        ring.classList.add('warning');
-
-        statusEl.textContent = 'Advertencia';
-        statusEl.classList.add('warning-text');
-
-        timeEl.style.color = 'var(--warning)';
-
-      } else {
-
-        statusEl.textContent = 'En progreso';
-      }
-
-      ring.style.background = `
-        conic-gradient(
-          ${color} ${progress}deg,
-          rgba(255,255,255,.08) ${progress}deg
-        )
-      `;
-    }
-
-    function update(){
-
-      elapsed = Date.now() - startTime;
-
-      formatTime(elapsed);
-
-      const seconds = elapsed / 1000;
-
-      updateRing(seconds);
-    }
-
-    startBtn.onclick = () => {
-
-      if(running) return;
-
-      running = true;
-
-      startTime = Date.now() - elapsed;
-
-      interval = setInterval(update, 10);
-    };
-
-    pauseBtn.onclick = () => {
-
-      running = false;
-
-      clearInterval(interval);
-    };
-
-    resetBtn.onclick = () => {
-
-      running = false;
-
-      clearInterval(interval);
-
-      elapsed = 0;
-
-      formatTime(0);
-
-      ring.style.background = `
-        conic-gradient(
-          var(--primary) 0deg,
-          rgba(255,255,255,.08) 0deg
-        )
-      `;
-
-      ring.classList.remove('warning','danger');
-
-      statusEl.textContent = '';
-
-      timeEl.style.color = 'white';
-    };
-
-    formatTime(0);
-  </script>
-
-</body>
-    </html>
+<!DOCTYPE html> 
+<html lang="es"> 
+<head> 
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+
+<title>CHRONO</title> 
+
+<style> 
+
+*{ 
+ margin:0; 
+ padding:0; 
+ box-sizing:border-box; 
+} 
+
+:root{ 
+
+ --bg:#000000; 
+
+ --cyan:#00e5ff; 
+ --yellow:#ffd000; 
+ --red:#ff3355; 
+
+ --text:#dffcff; 
+ --muted:#5f8892; 
+
+ --panel:#020712; 
+} 
+
+body{ 
+
+ min-height:100vh; 
+
+ background:#000; 
+
+ display:flex; 
+ justify-content:center; 
+ align-items:center; 
+
+ padding:10px; 
+
+ overflow:hidden; 
+
+ color:var(--text); 
+
+ /* COLOCA AQUÍ TU FONT TRON */ 
+ font-family: 
+ "Orbitron", 
+ sans-serif; 
+} 
+
+.app{ 
+
+ width:100%; 
+ max-width:340px; 
+
+ background: 
+ linear-gradient( 
+ 180deg, 
+ #02050d, 
+ #040916 
+ ); 
+
+ border: 
+ 1px solid rgba(0,229,255,.18); 
+
+ border-radius:18px; 
+
+ padding:20px; 
+
+ position:relative; 
+
+ overflow:hidden; 
+
+ box-shadow: 
+ 0 0 20px rgba(0,229,255,.05), 
+ inset 0 0 20px rgba(0,229,255,.03); 
+} 
+
+/* ========================= 
+ GRID GLOW 
+========================= */ 
+
+.app::before{ 
+
+ content:""; 
+
+ position:absolute; 
+
+ inset:0; 
+
+ background-image: 
+ linear-gradient( 
+ rgba(0,229,255,.03) 1px, 
+ transparent 1px 
+ ), 
+ linear-gradient( 
+ 90deg, 
+ rgba(0,229,255,.03) 1px, 
+ transparent 1px 
+ ); 
+
+ background-size:22px 22px; 
+
+ pointer-events:none; 
+} 
+
+/* ========================= 
+ TITLE 
+========================= */ 
+
+.title{ 
+
+ text-align:center; 
+
+ font-size:.72rem; 
+
+ letter-spacing:6px; 
+
+ color:var(--muted); 
+
+ margin-bottom:28px; 
+
+ position:relative; 
+
+ z-index:2; 
+} 
+
+/* ========================= 
+ TIMER BOX 
+========================= */ 
+
+.timer-box{ 
+
+ position:relative; 
+
+ width:100%; 
+
+ aspect-ratio:1/1; 
+
+ border: 
+ 1px solid rgba(0,229,255,.15); 
+
+ border-radius:16px; 
+
+ display:flex; 
+ justify-content:center; 
+ align-items:center; 
+
+ overflow:hidden; 
+
+ background: 
+ radial-gradient( 
+ circle at center, 
+ rgba(0,229,255,.03), 
+ transparent 70% 
+ ); 
+
+ z-index:2; 
+} 
+
+/* ========================= 
+ TRON LINE 
+========================= */ 
+
+.scan-line{ 
+
+ position:absolute; 
+
+ inset:0; 
+
+ border-radius:16px; 
+
+ pointer-events:none; 
+} 
+
+.scan-line::before{ 
+
+ content:""; 
+
+ position:absolute; 
+
+ width:80px; 
+ height:3px; 
+
+ background:var(--cyan); 
+
+ box-shadow: 
+ 0 0 8px rgba(0,229,255,.9), 
+ 0 0 18px rgba(0,229,255,.7); 
+
+ animation: 
+ tronBorder 6s linear infinite; 
+} 
+
+@keyframes tronBorder{ 
+
+ 0%{ 
+ top:0; 
+ left:0; 
+ width:80px; 
+ height:3px; 
+ } 
+
+ 25%{ 
+ top:0; 
+ left:calc(100% - 80px); 
+ width:3px; 
+ height:80px; 
+ } 
+
+ 50%{ 
+ top:calc(100% - 3px); 
+ left:calc(100% - 80px); 
+ width:80px; 
+ height:3px; 
+ } 
+
+ 75%{ 
+ top:calc(100% - 80px); 
+ left:0; 
+ width:3px; 
+ height:80px; 
+ } 
+
+ 100%{ 
+ top:0; 
+ left:0; 
+ width:80px; 
+ height:3px; 
+ } 
+} 
+
+/* ========================= 
+ TIMER CONTENT 
+========================= */ 
+
+.timer-content{ 
+
+ position:relative; 
+
+ z-index:3; 
+
+ display:flex; 
+ flex-direction:column; 
+ align-items:center; 
+ justify-content:center; 
+} 
+
+/* ========================= 
+ STROKE NUMBERS 
+========================= */ 
+
+.time{ 
+
+ font-size: 
+ clamp(3rem, 14vw, 5.2rem); 
+
+ line-height:1; 
+
+ letter-spacing:4px; 
+
+ font-weight:900; 
+
+ color:transparent; 
+
+ -webkit-text-stroke: 
+ 2px var(--cyan); 
+
+ text-shadow: 
+ 0 0 8px rgba(0,229,255,.7), 
+ 0 0 20px rgba(0,229,255,.3); 
+
+ font-variant-numeric: 
+ tabular-nums; 
+
+ transition:.2s ease; 
+} 
+
+.milliseconds{ 
+
+ margin-top:12px; 
+
+ color:var(--muted); 
+
+ letter-spacing:3px; 
+
+ font-size:.95rem; 
+
+ font-variant-numeric: 
+ tabular-nums; 
+} 
+
+.status{ 
+
+ margin-top:18px; 
+
+ min-height:18px; 
+
+ font-size:.7rem; 
+
+ letter-spacing:3px; 
+
+ color:var(--muted); 
+
+ transition:.2s ease; 
+} 
+
+/* ========================= 
+ STATES 
+========================= */ 
+
+.warning{ 
+
+ color:transparent; 
+
+ -webkit-text-stroke: 
+ 2px var(--yellow); 
+
+ text-shadow: 
+ 0 0 10px rgba(255,208,0,.7); 
+} 
+
+.danger{ 
+
+ color:transparent; 
+
+ -webkit-text-stroke: 
+ 2px var(--red); 
+
+ text-shadow: 
+ 0 0 12px rgba(255,51,85,.7); 
+} 
+
+/* ========================= 
+ CONTROLS 
+========================= */ 
+
+.controls{ 
+
+ margin-top:24px; 
+
+ display:grid; 
+
+ grid-template-columns: 
+ 1fr 1fr; 
+
+ gap:12px; 
+
+ position:relative; 
+
+ z-index:2; 
+} 
+
+button{ 
+
+ border:none; 
+
+ background:#07111f; 
+
+ color:var(--cyan); 
+
+ border: 
+ 1px solid rgba(0,229,255,.2); 
+
+ border-radius:10px; 
+
+ padding:14px 10px; 
+
+ cursor:pointer; 
+
+ text-transform:uppercase; 
+
+ letter-spacing:2px; 
+
+ font-size:.75rem; 
+
+ transition:.18s ease; 
+
+ font-family:inherit; 
+} 
+
+button:hover{ 
+
+ transform:translateY(-2px); 
+
+ background:#0a1b2e; 
+
+ box-shadow: 
+ 0 0 10px rgba(0,229,255,.25); 
+} 
+
+button:active{ 
+
+ transform:scale(.97); 
+} 
+
+/* ========================= 
+ SETTINGS 
+========================= */ 
+
+.settings-wrapper{ 
+
+ margin-top:18px; 
+
+ position:relative; 
+
+ z-index:2; 
+} 
+
+.settings{ 
+
+ overflow:hidden; 
+
+ max-height:300px; 
+
+ opacity:1; 
+
+ transition: 
+ max-height .3s ease, 
+ opacity .3s ease, 
+ margin-top .3s ease; 
+
+ margin-top:12px; 
+
+ display:flex; 
+ flex-direction:column; 
+
+ gap:12px; 
+} 
+
+.settings.hidden{ 
+
+ max-height:0; 
+
+ opacity:0; 
+
+ margin-top:0; 
+
+ pointer-events:none; 
+} 
+
+.field{ 
+
+ display:flex; 
+ flex-direction:column; 
+
+ gap:7px; 
+} 
+
+.field label{ 
+
+ font-size:.68rem; 
+
+ color:var(--muted); 
+
+ letter-spacing:1px; 
+} 
+
+.field input{ 
+
+ width:100%; 
+
+ background:#02050d; 
+
+ border: 
+ 1px solid rgba(0,229,255,.12); 
+
+ border-radius:8px; 
+
+ padding:12px; 
+
+ color:var(--text); 
+
+ outline:none; 
+
+ font-family:inherit; 
+} 
+
+/* ========================= 
+ RESPONSIVE 
+========================= */ 
+
+@media(max-width:420px){ 
+
+ .app{ 
+
+ padding:16px; 
+ } 
+
+ .controls{ 
+
+ grid-template-columns:1fr; 
+ } 
+
+ .time{ 
+
+ -webkit-text-stroke:1.5px var(--cyan); 
+
+ letter-spacing:2px; 
+ } 
+} 
+
+</style> 
+</head> 
+<body> 
+
+<div class="app"> 
+
+ <div class="title"> 
+ CHRONO 
+ </div> 
+
+ <div class="timer-box"> 
+
+ <div class="scan-line"></div> 
+
+ <div class="timer-content"> 
+
+ <div class="time" id="time"> 
+ 00:00 
+ </div> 
+
+ <div class="milliseconds" id="milliseconds"> 
+ .000 
+ </div> 
+
+ <div class="status" id="status"> 
+ READY 
+ </div> 
+
+ </div> 
+
+ </div> 
+
+ <div class="controls"> 
+
+ <button id="mainBtn"> 
+ START 
+ </button> 
+
+ <button id="pauseBtn"> 
+ PAUSE 
+ </button> 
+
+ </div> 
+
+ <div class="settings-wrapper"> 
+
+ <button id="toggleSettings"> 
+ ⚙ SETTINGS 
+ </button> 
+
+ <div 
+ class="settings hidden" 
+ id="settingsPanel" 
+ > 
+
+ <div class="field"> 
+
+ <label> 
+ WARNING (SECONDS) 
+ </label> 
+
+ <input 
+ type="number" 
+ id="warningInput" 
+ value="35" 
+ min="1" 
+ /> 
+
+ </div> 
+
+ <div class="field"> 
+
+ <label> 
+ DANGER (SECONDS) 
+ </label> 
+
+ <input 
+ type="number" 
+ id="dangerInput" 
+ value="60" 
+ min="1" 
+ /> 
+
+ </div> 
+
+ </div> 
+
+ </div> 
+
+</div> 
+
+<script> 
+
+const timeEl = 
+ document.getElementById('time'); 
+
+const msEl = 
+ document.getElementById('milliseconds'); 
+
+const statusEl = 
+ document.getElementById('status'); 
+
+const mainBtn = 
+ document.getElementById('mainBtn'); 
+
+const pauseBtn = 
+ document.getElementById('pauseBtn'); 
+
+const warningInput = 
+ document.getElementById('warningInput'); 
+
+const dangerInput = 
+ document.getElementById('dangerInput'); 
+
+const toggleSettings = 
+ document.getElementById('toggleSettings'); 
+
+const settingsPanel = 
+ document.getElementById('settingsPanel'); 
+
+let startTime = 0; 
+
+let elapsed = 0; 
+
+let interval = null; 
+
+let running = false; 
+
+/* ========================= 
+ FORMAT TIME 
+========================= */ 
+
+function formatTime(ms){ 
+
+ const minutes = 
+ Math.floor(ms / 60000); 
+
+ const seconds = 
+ Math.floor((ms % 60000) / 1000); 
+
+ const milliseconds = 
+ ms % 1000; 
+
+ timeEl.textContent = 
+ `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; 
+
+ msEl.textContent = 
+ `.${String(milliseconds).padStart(3,'0')}`; 
+} 
+
+/* ========================= 
+ VISUAL STATE 
+========================= */ 
+
+function updateVisualState(seconds){ 
+
+ const warning = 
+ Number(warningInput.value); 
+
+ const danger = 
+ Number(dangerInput.value); 
+
+ timeEl.classList.remove( 
+ 'warning', 
+ 'danger' 
+ ); 
+
+ if(seconds >= danger){ 
+
+ timeEl.classList.add('danger'); 
+
+ statusEl.textContent = 
+ 'CRITICAL'; 
+
+ statusEl.className = 
+ 'status danger'; 
+ } 
+
+ else if(seconds >= warning){ 
+
+ timeEl.classList.add('warning'); 
+
+ statusEl.textContent = 
+ 'WARNING'; 
+
+ statusEl.className = 
+ 'status warning'; 
+ } 
+
+ else{ 
+
+ statusEl.textContent = 
+ 'RUNNING'; 
+
+ statusEl.className = 
+ 'status'; 
+ } 
+} 
+
+/* ========================= 
+ UPDATE 
+========================= */ 
+
+function update(){ 
+
+ elapsed = 
+ Date.now() - startTime; 
+
+ formatTime(elapsed); 
+
+ updateVisualState( 
+ elapsed / 1000 
+ ); 
+} 
+
+/* ========================= 
+ START 
+========================= */ 
+
+function startTimer(){ 
+
+ running = true; 
+
+ startTime = 
+ Date.now() - elapsed; 
+
+ interval = 
+ setInterval(update, 10); 
+
+ mainBtn.textContent = 
+ 'RESET'; 
+} 
+
+/* ========================= 
+ RESET 
+========================= */ 
+
+function resetTimer(){ 
+
+ running = false; 
+
+ clearInterval(interval); 
+
+ elapsed = 0; 
+
+ formatTime(0); 
+
+ timeEl.classList.remove( 
+ 'warning', 
+ 'danger' 
+ ); 
+
+ statusEl.textContent = 
+ 'READY'; 
+
+ statusEl.className = 
+ 'status'; 
+
+ mainBtn.textContent = 
+ 'START'; 
+} 
+
+/* ========================= 
+ MAIN BUTTON 
+========================= */ 
+
+mainBtn.onclick = () => { 
+
+ if(!running){ 
+
+ startTimer(); 
+
+ } else { 
+
+ resetTimer(); 
+ } 
+}; 
+
+/* ========================= 
+ PAUSE 
+========================= */ 
+
+pauseBtn.onclick = () => { 
+
+ if(!running) return; 
+
+ running = false; 
+
+ clearInterval(interval); 
+
+ statusEl.textContent = 
+ 'PAUSED'; 
+}; 
+
+/* ========================= 
+ SETTINGS 
+========================= */ 
+
+toggleSettings.onclick = () => { 
+
+ settingsPanel.classList.toggle( 
+ 'hidden' 
+ ); 
+}; 
+
+formatTime(0); 
+
+</script> 
+
+</body> 
+</html>
