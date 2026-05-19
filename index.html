@@ -1,815 +1,492 @@
-<!DOCTYPE html> 
-<html lang="es"> 
-<head> 
-<meta charset="UTF-8" /> 
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-
-<title>CHRONO</title> 
-
-<style> 
-
-*{ 
- margin:0; 
- padding:0; 
- box-sizing:border-box; 
-} 
-
-:root{ 
-
- --bg:#000000; 
-
- --cyan:#00e5ff; 
- --yellow:#ffd000; 
- --red:#ff3355; 
-
- --text:#dffcff; 
- --muted:#5f8892; 
-
- --panel:#020712; 
-} 
-
-body{ 
-
- min-height:100vh; 
-
- background:#000; 
-
- display:flex; 
- justify-content:center; 
- align-items:center; 
-
- padding:10px; 
-
- overflow:hidden; 
-
- color:var(--text); 
-
- /* COLOCA AQUÍ TU FONT TRON */ 
- font-family: 
- "Orbitron", 
- sans-serif; 
-} 
-
-.app{ 
-
- width:100%; 
- max-width:340px; 
-
- background: 
- linear-gradient( 
- 180deg, 
- #02050d, 
- #040916 
- ); 
-
- border: 
- 1px solid rgba(0,229,255,.18); 
-
- border-radius:18px; 
-
- padding:20px; 
-
- position:relative; 
-
- overflow:hidden; 
-
- box-shadow: 
- 0 0 20px rgba(0,229,255,.05), 
- inset 0 0 20px rgba(0,229,255,.03); 
-} 
-
-/* ========================= 
- GRID GLOW 
-========================= */ 
-
-.app::before{ 
-
- content:""; 
-
- position:absolute; 
-
- inset:0; 
-
- background-image: 
- linear-gradient( 
- rgba(0,229,255,.03) 1px, 
- transparent 1px 
- ), 
- linear-gradient( 
- 90deg, 
- rgba(0,229,255,.03) 1px, 
- transparent 1px 
- ); 
-
- background-size:22px 22px; 
-
- pointer-events:none; 
-} 
-
-/* ========================= 
- TITLE 
-========================= */ 
-
-.title{ 
-
- text-align:center; 
-
- font-size:.72rem; 
-
- letter-spacing:6px; 
-
- color:var(--muted); 
-
- margin-bottom:28px; 
-
- position:relative; 
-
- z-index:2; 
-} 
-
-/* ========================= 
- TIMER BOX 
-========================= */ 
-
-.timer-box{ 
-
- position:relative; 
-
- width:100%; 
-
- aspect-ratio:1/1; 
-
- border: 
- 1px solid rgba(0,229,255,.15); 
-
- border-radius:16px; 
-
- display:flex; 
- justify-content:center; 
- align-items:center; 
-
- overflow:hidden; 
-
- background: 
- radial-gradient( 
- circle at center, 
- rgba(0,229,255,.03), 
- transparent 70% 
- ); 
-
- z-index:2; 
-} 
-
-/* ========================= 
- TRON LINE 
-========================= */ 
-
-.scan-line{ 
-
- position:absolute; 
-
- inset:0; 
-
- border-radius:16px; 
-
- pointer-events:none; 
-} 
-
-.scan-line::before{ 
-
- content:""; 
-
- position:absolute; 
-
- width:80px; 
- height:3px; 
-
- background:var(--cyan); 
-
- box-shadow: 
- 0 0 8px rgba(0,229,255,.9), 
- 0 0 18px rgba(0,229,255,.7); 
-
- animation: 
- tronBorder 6s linear infinite; 
-} 
-
-@keyframes tronBorder{ 
-
- 0%{ 
- top:0; 
- left:0; 
- width:80px; 
- height:3px; 
- } 
-
- 25%{ 
- top:0; 
- left:calc(100% - 80px); 
- width:3px; 
- height:80px; 
- } 
-
- 50%{ 
- top:calc(100% - 3px); 
- left:calc(100% - 80px); 
- width:80px; 
- height:3px; 
- } 
-
- 75%{ 
- top:calc(100% - 80px); 
- left:0; 
- width:3px; 
- height:80px; 
- } 
-
- 100%{ 
- top:0; 
- left:0; 
- width:80px; 
- height:3px; 
- } 
-} 
-
-/* ========================= 
- TIMER CONTENT 
-========================= */ 
-
-.timer-content{ 
-
- position:relative; 
-
- z-index:3; 
-
- display:flex; 
- flex-direction:column; 
- align-items:center; 
- justify-content:center; 
-} 
-
-/* ========================= 
- STROKE NUMBERS 
-========================= */ 
-
-.time{ 
-
- font-size: 
- clamp(3rem, 14vw, 5.2rem); 
-
- line-height:1; 
-
- letter-spacing:4px; 
-
- font-weight:900; 
-
- color:transparent; 
-
- -webkit-text-stroke: 
- 2px var(--cyan); 
-
- text-shadow: 
- 0 0 8px rgba(0,229,255,.7), 
- 0 0 20px rgba(0,229,255,.3); 
-
- font-variant-numeric: 
- tabular-nums; 
-
- transition:.2s ease; 
-} 
-
-.milliseconds{ 
-
- margin-top:12px; 
-
- color:var(--muted); 
-
- letter-spacing:3px; 
-
- font-size:.95rem; 
-
- font-variant-numeric: 
- tabular-nums; 
-} 
-
-.status{ 
-
- margin-top:18px; 
-
- min-height:18px; 
-
- font-size:.7rem; 
-
- letter-spacing:3px; 
-
- color:var(--muted); 
-
- transition:.2s ease; 
-} 
-
-/* ========================= 
- STATES 
-========================= */ 
-
-.warning{ 
-
- color:transparent; 
-
- -webkit-text-stroke: 
- 2px var(--yellow); 
-
- text-shadow: 
- 0 0 10px rgba(255,208,0,.7); 
-} 
-
-.danger{ 
-
- color:transparent; 
-
- -webkit-text-stroke: 
- 2px var(--red); 
-
- text-shadow: 
- 0 0 12px rgba(255,51,85,.7); 
-} 
-
-/* ========================= 
- CONTROLS 
-========================= */ 
-
-.controls{ 
-
- margin-top:24px; 
-
- display:grid; 
-
- grid-template-columns: 
- 1fr 1fr; 
-
- gap:12px; 
-
- position:relative; 
-
- z-index:2; 
-} 
-
-button{ 
-
- border:none; 
-
- background:#07111f; 
-
- color:var(--cyan); 
-
- border: 
- 1px solid rgba(0,229,255,.2); 
-
- border-radius:10px; 
-
- padding:14px 10px; 
-
- cursor:pointer; 
-
- text-transform:uppercase; 
-
- letter-spacing:2px; 
-
- font-size:.75rem; 
-
- transition:.18s ease; 
-
- font-family:inherit; 
-} 
-
-button:hover{ 
-
- transform:translateY(-2px); 
-
- background:#0a1b2e; 
-
- box-shadow: 
- 0 0 10px rgba(0,229,255,.25); 
-} 
-
-button:active{ 
-
- transform:scale(.97); 
-} 
-
-/* ========================= 
- SETTINGS 
-========================= */ 
-
-.settings-wrapper{ 
-
- margin-top:18px; 
-
- position:relative; 
-
- z-index:2; 
-} 
-
-.settings{ 
-
- overflow:hidden; 
-
- max-height:300px; 
-
- opacity:1; 
-
- transition: 
- max-height .3s ease, 
- opacity .3s ease, 
- margin-top .3s ease; 
-
- margin-top:12px; 
-
- display:flex; 
- flex-direction:column; 
-
- gap:12px; 
-} 
-
-.settings.hidden{ 
-
- max-height:0; 
-
- opacity:0; 
-
- margin-top:0; 
-
- pointer-events:none; 
-} 
-
-.field{ 
-
- display:flex; 
- flex-direction:column; 
-
- gap:7px; 
-} 
-
-.field label{ 
-
- font-size:.68rem; 
-
- color:var(--muted); 
-
- letter-spacing:1px; 
-} 
-
-.field input{ 
-
- width:100%; 
-
- background:#02050d; 
-
- border: 
- 1px solid rgba(0,229,255,.12); 
-
- border-radius:8px; 
-
- padding:12px; 
-
- color:var(--text); 
-
- outline:none; 
-
- font-family:inherit; 
-} 
-
-/* ========================= 
- RESPONSIVE 
-========================= */ 
-
-@media(max-width:420px){ 
-
- .app{ 
-
- padding:16px; 
- } 
-
- .controls{ 
-
- grid-template-columns:1fr; 
- } 
-
- .time{ 
-
- -webkit-text-stroke:1.5px var(--cyan); 
-
- letter-spacing:2px; 
- } 
-} 
-
-</style> 
-</head> 
-<body> 
-
-<div class="app"> 
-
- <div class="title"> 
- CHRONO 
- </div> 
-
- <div class="timer-box"> 
-
- <div class="scan-line"></div> 
-
- <div class="timer-content"> 
-
- <div class="time" id="time"> 
- 00:00 
- </div> 
-
- <div class="milliseconds" id="milliseconds"> 
- .000 
- </div> 
-
- <div class="status" id="status"> 
- READY 
- </div> 
-
- </div> 
-
- </div> 
-
- <div class="controls"> 
-
- <button id="mainBtn"> 
- START 
- </button> 
-
- <button id="pauseBtn"> 
- PAUSE 
- </button> 
-
- </div> 
-
- <div class="settings-wrapper"> 
-
- <button id="toggleSettings"> 
- ⚙ SETTINGS 
- </button> 
-
- <div 
- class="settings hidden" 
- id="settingsPanel" 
- > 
-
- <div class="field"> 
-
- <label> 
- WARNING (SECONDS) 
- </label> 
-
- <input 
- type="number" 
- id="warningInput" 
- value="35" 
- min="1" 
- /> 
-
- </div> 
-
- <div class="field"> 
-
- <label> 
- DANGER (SECONDS) 
- </label> 
-
- <input 
- type="number" 
- id="dangerInput" 
- value="60" 
- min="1" 
- /> 
-
- </div> 
-
- </div> 
-
- </div> 
-
-</div> 
-
-<script> 
-
-const timeEl = 
- document.getElementById('time'); 
-
-const msEl = 
- document.getElementById('milliseconds'); 
-
-const statusEl = 
- document.getElementById('status'); 
-
-const mainBtn = 
- document.getElementById('mainBtn'); 
-
-const pauseBtn = 
- document.getElementById('pauseBtn'); 
-
-const warningInput = 
- document.getElementById('warningInput'); 
-
-const dangerInput = 
- document.getElementById('dangerInput'); 
-
-const toggleSettings = 
- document.getElementById('toggleSettings'); 
-
-const settingsPanel = 
- document.getElementById('settingsPanel'); 
-
-let startTime = 0; 
-
-let elapsed = 0; 
-
-let interval = null; 
-
-let running = false; 
-
-/* ========================= 
- FORMAT TIME 
-========================= */ 
-
-function formatTime(ms){ 
-
- const minutes = 
- Math.floor(ms / 60000); 
-
- const seconds = 
- Math.floor((ms % 60000) / 1000); 
-
- const milliseconds = 
- ms % 1000; 
-
- timeEl.textContent = 
- `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`; 
-
- msEl.textContent = 
- `.${String(milliseconds).padStart(3,'0')}`; 
-} 
-
-/* ========================= 
- VISUAL STATE 
-========================= */ 
-
-function updateVisualState(seconds){ 
-
- const warning = 
- Number(warningInput.value); 
-
- const danger = 
- Number(dangerInput.value); 
-
- timeEl.classList.remove( 
- 'warning', 
- 'danger' 
- ); 
-
- if(seconds >= danger){ 
-
- timeEl.classList.add('danger'); 
-
- statusEl.textContent = 
- 'CRITICAL'; 
-
- statusEl.className = 
- 'status danger'; 
- } 
-
- else if(seconds >= warning){ 
-
- timeEl.classList.add('warning'); 
-
- statusEl.textContent = 
- 'WARNING'; 
-
- statusEl.className = 
- 'status warning'; 
- } 
-
- else{ 
-
- statusEl.textContent = 
- 'RUNNING'; 
-
- statusEl.className = 
- 'status'; 
- } 
-} 
-
-/* ========================= 
- UPDATE 
-========================= */ 
-
-function update(){ 
-
- elapsed = 
- Date.now() - startTime; 
-
- formatTime(elapsed); 
-
- updateVisualState( 
- elapsed / 1000 
- ); 
-} 
-
-/* ========================= 
- START 
-========================= */ 
-
-function startTimer(){ 
-
- running = true; 
-
- startTime = 
- Date.now() - elapsed; 
-
- interval = 
- setInterval(update, 10); 
-
- mainBtn.textContent = 
- 'RESET'; 
-} 
-
-/* ========================= 
- RESET 
-========================= */ 
-
-function resetTimer(){ 
-
- running = false; 
-
- clearInterval(interval); 
-
- elapsed = 0; 
-
- formatTime(0); 
-
- timeEl.classList.remove( 
- 'warning', 
- 'danger' 
- ); 
-
- statusEl.textContent = 
- 'READY'; 
-
- statusEl.className = 
- 'status'; 
-
- mainBtn.textContent = 
- 'START'; 
-} 
-
-/* ========================= 
- MAIN BUTTON 
-========================= */ 
-
-mainBtn.onclick = () => { 
-
- if(!running){ 
-
- startTimer(); 
-
- } else { 
-
- resetTimer(); 
- } 
-}; 
-
-/* ========================= 
- PAUSE 
-========================= */ 
-
-pauseBtn.onclick = () => { 
-
- if(!running) return; 
-
- running = false; 
-
- clearInterval(interval); 
-
- statusEl.textContent = 
- 'PAUSED'; 
-}; 
-
-/* ========================= 
- SETTINGS 
-========================= */ 
-
-toggleSettings.onclick = () => { 
-
- settingsPanel.classList.toggle( 
- 'hidden' 
- ); 
-}; 
-
-formatTime(0); 
-
-</script> 
-
-</body> 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CHRONO</title>
+<style>
+
+@font-face {
+  font-family: "Tr2n";
+  src: url("Tr2n.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --cyan:   #00e5ff;
+  --yellow: #ffd000;
+  --red:    #ff3355;
+  --text:   #dffcff;
+  --muted:  #5f8892;
+  --font-tron: "TronFont", "Orbitron", monospace;
+}
+
+html, body { height:100%; width:100%; }
+
+body {
+  min-height:100vh;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:8px;
+  overflow:hidden;
+  color:var(--text);
+  font-family:var(--font-tron);
+}
+
+.app {
+  container-type: inline-size;
+  container-name: app;
+  width:100%;
+  max-width:340px;
+  background:linear-gradient(180deg,#02050d,#040916);
+  border:1px solid rgba(0,229,255,.18);
+  border-radius:18px;
+  padding:clamp(10px,4vw,20px);
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 20px rgba(0,229,255,.05),inset 0 0 20px rgba(0,229,255,.03);
+}
+
+.app::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.04) 1px,transparent 1px);
+  background-size:22px 22px;
+  pointer-events:none;
+}
+
+.title {
+  text-align:center;
+  font-size:clamp(.55rem,2.5vw,.72rem);
+  letter-spacing:clamp(3px,1.5vw,6px);
+  color:var(--muted);
+  margin-bottom:clamp(12px,4vw,28px);
+  position:relative;
+  z-index:2;
+}
+
+/* Timer box — SIN overflow hidden para que el canvas se vea */
+.timer-box {
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:16px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at center,rgba(0,229,255,.03),transparent 70%);
+  z-index:2;
+}
+
+/* Borde estático muy tenue debajo del canvas */
+.timer-box::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  border:1px solid rgba(0,229,255,.1);
+  border-radius:16px;
+  pointer-events:none;
+}
+
+/* Canvas ocupa exactamente el timer-box */
+#trailCanvas {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:16px;
+  pointer-events:none;
+  z-index:3;
+}
+
+/* Números */
+.timer-content {
+  position:relative;
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  padding:8px;
+}
+
+.time {
+  font-size:clamp(1.8rem,14cqw,5.2rem);
+  line-height:1;
+  letter-spacing:clamp(1px,1vw,4px);
+  font-weight:900;
+  color:transparent;
+  -webkit-text-stroke:clamp(1px,.3cqw,2px) var(--cyan);
+  text-shadow:0 0 8px rgba(0,229,255,.7),0 0 20px rgba(0,229,255,.3);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  transition:color .2s,-webkit-text-stroke-color .2s,text-shadow .2s;
+}
+
+.time.warning {
+  -webkit-text-stroke-color:var(--yellow) !important;
+  text-shadow:0 0 10px rgba(255,208,0,.7) !important;
+}
+
+.time.danger {
+  -webkit-text-stroke-color:var(--red) !important;
+  text-shadow:0 0 12px rgba(255,51,85,.7) !important;
+}
+
+.milliseconds {
+  margin-top:clamp(10px,3vw,14px);
+  color:var(--muted);
+  letter-spacing:clamp(1px,1vw,3px);
+  font-size:clamp(.60rem,4cqw,.95rem);
+  font-variant-numeric:tabular-nums;
+}
+
+.status {
+  margin-top:clamp(8px,3vw,18px);
+  min-height:16px;
+  font-size:clamp(.70rem,2.8cqw,.8rem);
+  letter-spacing:clamp(1px,1vw,3px);
+  color:var(--muted);
+  transition:.2s;
+}
+
+/* Controles */
+.controls {
+  margin-top:clamp(12px,4vw,24px);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(6px,2vw,12px);
+  position:relative;
+  z-index:2;
+}
+
+button {
+  background:#07111f;
+  color:var(--cyan);
+  border:1px solid rgba(0,229,255,.2);
+  border-radius:10px;
+  padding:clamp(8px,3vw,14px) clamp(6px,2vw,10px);
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:clamp(1px,.8vw,2px);
+  font-size:clamp(.6rem,2.5cqw,.75rem);
+  transition:.18s;
+  font-family:inherit;
+  white-space:nowrap;
+}
+button:hover { transform:translateY(-2px); background:#0a1b2e; box-shadow:0 0 10px rgba(0,229,255,.25); }
+button:active { transform:scale(.97); }
+
+/* Settings */
+.settings-wrapper { margin-top:clamp(10px,3vw,18px); position:relative; z-index:2; }
+
+.settings {
+  overflow:hidden;
+  max-height:300px;
+  opacity:1;
+  transition:max-height .3s,opacity .3s,margin-top .3s;
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:clamp(6px,2vw,12px);
+}
+.settings.hidden { max-height:0; opacity:0; margin-top:0; pointer-events:none; }
+
+.field { display:flex; flex-direction:column; gap:7px; }
+.field label { font-size:clamp(.55rem,2cqw,.68rem); color:var(--muted); letter-spacing:1px; }
+.field input {
+  width:100%;
+  background:#02050d;
+  border:1px solid rgba(0,229,255,.12);
+  border-radius:8px;
+  padding:clamp(8px,2.5vw,12px);
+  color:var(--text);
+  outline:none;
+  font-family:inherit;
+  font-size:clamp(.65rem,2.5cqw,.85rem);
+  -moz-appearance:textfield;
+}
+.field input::-webkit-outer-spin-button,
+.field input::-webkit-inner-spin-button {
+  -webkit-appearance:none;
+  margin:0;
+}
+
+/* Responsive ultra-delgado */
+@container app (max-width:200px) {
+  .title { font-size:.5rem; letter-spacing:2px; margin-bottom:8px; }
+  .controls { grid-template-columns:1fr; }
+  .time { font-size:clamp(1.4rem,18cqw,2.8rem); -webkit-text-stroke-width:1px; }
+  .milliseconds { font-size:clamp(.45rem,4cqw,.65rem); }
+  .status { font-size:.5rem; margin-top:6px; }
+  button { padding:8px 4px; font-size:.55rem; letter-spacing:1px; }
+}
+@container app (max-width:280px) {
+  .controls { grid-template-columns:1fr 1fr; gap:6px; }
+  .time { font-size:clamp(1.6rem,16cqw,3.5rem); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="title">CHRONO</div>
+
+  <div class="timer-box" id="timerBox">
+    <canvas id="trailCanvas"></canvas>
+    <div class="timer-content">
+      <div class="time" id="time">00:00</div>
+      <div class="milliseconds" id="milliseconds">.000</div>
+      <div class="status" id="status">READY</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="mainBtn">START</button>
+    <button id="pauseBtn">PAUSE</button>
+  </div>
+
+  <div class="settings-wrapper">
+    <button id="toggleSettings" style="width:100%">⚙ SETTINGS</button>
+    <div class="settings hidden" id="settingsPanel">
+      <div class="field">
+        <label>WARNING (SECONDS)</label>
+        <input type="number" id="warningInput" value="35" min="1"/>
+      </div>
+      <div class="field">
+        <label>DANGER (SECONDS)</label>
+        <input type="number" id="dangerInput" value="60" min="1"/>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const timeEl         = document.getElementById('time');
+const msEl           = document.getElementById('milliseconds');
+const statusEl       = document.getElementById('status');
+const mainBtn        = document.getElementById('mainBtn');
+const pauseBtn       = document.getElementById('pauseBtn');
+const warningInput   = document.getElementById('warningInput');
+const dangerInput    = document.getElementById('dangerInput');
+const toggleSettings = document.getElementById('toggleSettings');
+const settingsPanel  = document.getElementById('settingsPanel');
+const timerBox       = document.getElementById('timerBox');
+const canvas         = document.getElementById('trailCanvas');
+const ctx            = canvas.getContext('2d');
+
+const CYCLE_MS = 60000;
+
+// Colores del trail según estado
+const COLORS = {
+  normal:  { line: '#00e5ff', glow1: 'rgba(0,229,255,.9)',  glow2: 'rgba(0,229,255,.4)'  },
+  warning: { line: '#ffd000', glow1: 'rgba(255,208,0,.9)',  glow2: 'rgba(255,208,0,.4)'  },
+  danger:  { line: '#ff3355', glow1: 'rgba(255,51,85,.9)',  glow2: 'rgba(255,51,85,.4)'  },
+};
+let currentColor = COLORS.normal;
+
+// Redimensionar canvas al tamaño real del timerBox
+function resizeCanvas() {
+  const box = timerBox.getBoundingClientRect();
+  canvas.width  = box.width  * devicePixelRatio;
+  canvas.height = box.height * devicePixelRatio;
+  canvas.style.width  = box.width  + 'px';
+  canvas.style.height = box.height + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+
+// Dibuja un rect redondeado como path — igual que el border del timer-box
+function roundedRectPath(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y,     x + w, y + r,     r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x,     y + h, x,     y + h - r, r);
+  ctx.lineTo(x,     y + r);
+  ctx.arcTo(x,     y,     x + r, y,         r);
+  ctx.closePath();
+}
+
+// Calcula el perímetro exacto de ese rect redondeado
+function calcPerimeter(x, y, w, h, r) {
+  const straight = 2 * (w - 2*r) + 2 * (h - 2*r);
+  const arcs     = 2 * Math.PI * r;
+  return straight + arcs;
+}
+
+// Dibuja solo una porción del path usando lineDash
+function drawTrail(progress) {
+  const box = timerBox.getBoundingClientRect();
+  const W = box.width, H = box.height;
+  const pad = 4, r = 14;
+  const x = pad, y = pad, w = W - 2*pad, h = H - 2*pad;
+  const perim = calcPerimeter(x, y, w, h, r);
+  const drawn = progress * perim;
+
+  ctx.clearRect(0, 0, W, H);
+  if (drawn <= 0) return;
+
+  // Capa exterior — glow difuso
+  ctx.save();
+  roundedRectPath(x, y, w, h, r);
+  ctx.strokeStyle = currentColor.glow2;
+  ctx.lineWidth   = 10;
+  ctx.lineCap     = 'round';
+  ctx.setLineDash([drawn, perim - drawn]);
+  ctx.lineDashOffset = 0;
+  ctx.stroke();
+  ctx.restore();
+
+  // Capa media — glow nítido
+  ctx.save();
+  roundedRectPath(x, y, w, h, r);
+  ctx.strokeStyle = currentColor.glow1;
+  ctx.lineWidth   = 4;
+  ctx.lineCap     = 'round';
+  ctx.setLineDash([drawn, perim - drawn]);
+  ctx.lineDashOffset = 0;
+  ctx.stroke();
+  ctx.restore();
+
+  // Línea sólida brillante encima
+  ctx.save();
+  roundedRectPath(x, y, w, h, r);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth   = 1.5;
+  ctx.lineCap     = 'round';
+  ctx.setLineDash([drawn, perim - drawn]);
+  ctx.lineDashOffset = 0;
+  ctx.stroke();
+  ctx.restore();
+}
+
+let startTime = 0;
+let elapsed   = 0;
+let rafId     = null;
+let running   = false;
+let paused    = false;
+
+function formatTime(ms) {
+  const m   = Math.floor(ms / 60000);
+  const s   = Math.floor((ms % 60000) / 1000);
+  const mil = ms % 1000;
+  timeEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  msEl.textContent   = `.${String(mil).padStart(3,'0')}`;
+}
+
+function updateVisualState(seconds) {
+  const warning = Number(warningInput.value);
+  const danger  = Number(dangerInput.value);
+  timeEl.classList.remove('warning','danger');
+
+  if (seconds >= danger) {
+    timeEl.classList.add('danger');
+    currentColor = COLORS.danger;
+    statusEl.textContent = 'CRITICAL';
+    statusEl.style.color = 'var(--red)';
+    statusEl.style.textShadow = '0 0 8px rgba(255,51,85,.6)';
+  } else if (seconds >= warning) {
+    timeEl.classList.add('warning');
+    currentColor = COLORS.warning;
+    statusEl.textContent = 'WARNING';
+    statusEl.style.color = 'var(--yellow)';
+    statusEl.style.textShadow = '0 0 8px rgba(255,208,0,.6)';
+  } else {
+    currentColor = COLORS.normal;
+    statusEl.textContent = 'RUNNING';
+    statusEl.style.color = '';
+    statusEl.style.textShadow = '';
+  }
+}
+
+function loop() {
+  elapsed = Date.now() - startTime;
+  formatTime(elapsed);
+  updateVisualState(elapsed / 1000);
+  const cyclePos = elapsed % CYCLE_MS;
+  drawTrail(cyclePos / CYCLE_MS);
+  rafId = requestAnimationFrame(loop);
+}
+
+function startTimer() {
+  resizeCanvas();
+  running   = true;
+  paused    = false;
+  startTime = Date.now() - elapsed;
+  mainBtn.textContent  = 'RESET';
+  pauseBtn.textContent = 'PAUSE';
+  rafId = requestAnimationFrame(loop);
+}
+
+function resetTimer() {
+  running = false;
+  paused  = false;
+  cancelAnimationFrame(rafId);
+  elapsed = 0;
+  formatTime(0);
+  drawTrail(0);
+  timeEl.classList.remove('warning','danger');
+  currentColor = COLORS.normal;
+  statusEl.textContent  = 'READY';
+  statusEl.style.color  = '';
+  statusEl.style.textShadow = '';
+  mainBtn.textContent   = 'START';
+  pauseBtn.textContent  = 'PAUSE';
+}
+
+function togglePause() {
+  if (!running && !paused) return;
+  if (running) {
+    running = false;
+    paused  = true;
+    cancelAnimationFrame(rafId);
+    statusEl.textContent = 'PAUSED';
+    statusEl.style.color = '';
+    statusEl.style.textShadow = '';
+    pauseBtn.textContent = 'CONTINUE';
+  } else {
+    running   = true;
+    paused    = false;
+    startTime = Date.now() - elapsed;
+    pauseBtn.textContent = 'PAUSE';
+    updateVisualState(elapsed / 1000);
+    rafId = requestAnimationFrame(loop);
+  }
+}
+
+mainBtn.onclick  = () => { if (!running && !paused) startTimer(); else resetTimer(); };
+pauseBtn.onclick = togglePause;
+toggleSettings.onclick = () => { settingsPanel.classList.toggle('hidden'); };
+
+// Redibujar si cambia tamaño de ventana
+window.addEventListener('resize', () => {
+  if (running || paused) {
+    resizeCanvas();
+    const cyclePos = elapsed % CYCLE_MS;
+    drawTrail(cyclePos / CYCLE_MS);
+  }
+});
+
+// Init
+resizeCanvas();
+formatTime(0);
+drawTrail(0);
+</script>
+
+</body>
 </html>
