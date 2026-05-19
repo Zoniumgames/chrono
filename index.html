@@ -57,20 +57,21 @@ body {
   position:absolute;
   inset:0;
   background-image:
-    linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,229,255,.04) 1px,transparent 1px);
+    linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);
   background-size:22px 22px;
   pointer-events:none;
 }
 
 .title {
   text-align:center;
-  font-size:clamp(.55rem,2.5vw,.72rem);
+  font-size:clamp(1.55rem,2.5vw,.72rem);
   letter-spacing:clamp(3px,1.5vw,6px);
   color:var(--muted);
   margin-bottom:clamp(12px,4vw,28px);
   position:relative;
   z-index:2;
+  font-family: Tr2n;
 }
 
 /* Timer box — SIN overflow hidden para que el canvas se vea */
@@ -143,17 +144,17 @@ body {
 }
 
 .milliseconds {
-  margin-top:clamp(10px,3vw,14px);
+  margin-top:clamp(4px,2vw,12px);
   color:var(--muted);
   letter-spacing:clamp(1px,1vw,3px);
-  font-size:clamp(.60rem,4cqw,.95rem);
+  font-size:clamp(.55rem,3cqw,.95rem);
   font-variant-numeric:tabular-nums;
 }
 
 .status {
   margin-top:clamp(8px,3vw,18px);
   min-height:16px;
-  font-size:clamp(.70rem,2.8cqw,.8rem);
+  font-size:clamp(.55rem,2.5cqw,.7rem);
   letter-spacing:clamp(1px,1vw,3px);
   color:var(--muted);
   transition:.2s;
@@ -223,16 +224,30 @@ button:active { transform:scale(.97); }
 
 /* Responsive ultra-delgado */
 @container app (max-width:200px) {
-  .title { font-size:.5rem; letter-spacing:2px; margin-bottom:8px; }
+  .title { font-size:1.5rem; letter-spacing:2px; margin-bottom:6px; }
   .controls { grid-template-columns:1fr; }
-  .time { font-size:clamp(1.4rem,18cqw,2.8rem); -webkit-text-stroke-width:1px; }
-  .milliseconds { font-size:clamp(.45rem,4cqw,.65rem); }
-  .status { font-size:.5rem; margin-top:6px; }
-  button { padding:8px 4px; font-size:.55rem; letter-spacing:1px; }
+
+  /* El cuadro deja de ser cuadrado y se estira para dar espacio a los números */
+  .timer-box {
+    aspect-ratio: unset;
+    height: clamp(140px, 55vw, 200px);
+  }
+
+  .time { font-size: clamp(2rem, 22cqw, 3.2rem); -webkit-text-stroke-width:1.5px; }
+  .milliseconds { font-size: clamp(.6rem, 5cqw, .8rem); }
+  .status { font-size: clamp(.55rem, 3.5cqw, .7rem); margin-top:6px; }
+  button { padding:8px 4px; font-size:.55rem; letter-spacing:1px; height: 5vh;}
 }
+
 @container app (max-width:280px) {
-  .controls { grid-template-columns:1fr 1fr; gap:6px; }
-  .time { font-size:clamp(1.6rem,16cqw,3.5rem); }
+  .controls { grid-template-columns:1fr; gap:6px; }
+
+  .timer-box {
+    aspect-ratio: unset;
+    height: clamp(260px, 80vw, 240px);
+  }
+
+  .time { font-size: clamp(2.2rem, 19cqw, 3.8rem); }
 }
 
 </style>
